@@ -213,7 +213,7 @@ WHERE AppId=0 AND CounterId=@id AND Timestamp >= @timestamp AND CAST(Timestamp A
                         {
                             while (reader.Read())
                             {
-                                var timeStamp = reader.GetDateTime(0);
+                                var timeStamp = new DateTime(reader.GetDateTime(0).Ticks);
                                 var value = reader.GetFloat(1);
 
                                 list.Add(new PerfCounterValue(timeStamp, value));
