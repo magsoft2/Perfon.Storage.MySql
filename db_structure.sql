@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS PerfomanceCounterValues (
 	AppId SMALLINT NOT NULL DEFAULT '0',
 	CounterId SMALLINT NOT NULL,
-	Timestamp TIMESTAMP NOT NULL,
+	Timestamp DATETIME NOT NULL,
 	Value FLOAT NULL DEFAULT NULL,
 	PRIMARY KEY (AppId, CounterId, Timestamp)
 );

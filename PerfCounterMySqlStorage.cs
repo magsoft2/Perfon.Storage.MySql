@@ -52,6 +52,10 @@ namespace Perfon.Storage.MySql
                 }
 
 
+                //OnError(new object(), new PerfonErrorEventArgs("Save: "+now.ToString()+", CPU:"+(from t in counters where t.Name=="CPU, %" select t.Value).FirstOrDefault().ToString()));
+                //return;
+
+
                 List<short> counterId = new List<short>();
 
                 bool updateNames = false;
@@ -123,7 +127,7 @@ namespace Perfon.Storage.MySql
                         int i = 0;
 
                         cmd.Parameters.Add("timestamp", MySqlDbType.DateTime).Value = now;
-                            
+
                         foreach (var counter in counters)
                         {
                             sb.Append("(").Append(0).Append(",").Append(counterId[i]).Append(",@timestamp").Append(", @value").Append(i).Append("),");
@@ -138,25 +142,24 @@ namespace Perfon.Storage.MySql
                         cmd.CommandType = CommandType.Text;
                         await cmd.ExecuteNonQueryAsync();
                     }
-                    
+
+
                     //using (var cmd = new MySqlCommand())
                     //{
                     //    cmd.Connection = conn;
-
                     //    int i = 0;
                     //    foreach (var counter in counters)
                     //    {
                     //        cmd.CommandText = @"INSERT INTO PerfomanceCounterValues (AppId, CounterId, Timestamp, Value) VALUES (0, @id, @timestamp, @value)";
                     //        cmd.Parameters.Add("id", MySqlDbType.Int16).Value = counterId[i];
-                    //        cmd.Parameters.Add("timestamp", MySqlDbType.Timestamp).Value = now;
+                    //        cmd.Parameters.Add("timestamp", MySqlDbType.DateTime).Value = now;
                     //        cmd.Parameters.Add("value", MySqlDbType.Float).Value = counter.Value;
-                    //        cmd.ExecuteNonQuery();
+                    //        await cmd.ExecuteNonQueryAsync();
                     //        cmd.Parameters.Clear();
-
-
                     //        i++;
                     //    }
                     //}
+
 
                 }
 
@@ -203,13 +206,14 @@ namespace Perfon.Storage.MySql
                         var id = (short)(Tools.CalculateHash(counterName) % (ulong)short.MaxValue);
 
                         cmd.CommandText = @"SELECT Timestamp,Value FROM PerfomanceCounterValues 
-WHERE AppId=0 AND CounterId=@id AND Timestamp >= @timestamp AND CAST(Timestamp AS DATE) = @timestamp ORDER BY Timestamp LIMIT 18446744073709551615 OFFSET @skip";
+WHERE AppId=0 AND CounterId=@id AND Timestamp >= @timestamp AND Timestamp < @timestampNextDay ORDER BY Timestamp LIMIT 18446744073709551615 OFFSET @skip";
 
                         cmd.Parameters.Add("id", MySqlDbType.Int16).Value = id;
-                        cmd.Parameters.Add("timestamp", MySqlDbType.Timestamp).Value = date;
+                        cmd.Parameters.Add("timestamp", MySqlDbType.DateTime).Value = date;
+                        cmd.Parameters.Add("timestampNextDay", MySqlDbType.DateTime).Value = date.Value.AddDays(1); //CAST(Timestamp AS DATE) = @timestamp
                         cmd.Parameters.Add("skip", MySqlDbType.Int16).Value = skip;
                         
-                        using (var reader = await cmd.ExecuteReaderAsync())
+                        using (var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SequentialAccess))
                         {
                             while (reader.Read())
                             {
@@ -220,7 +224,6 @@ WHERE AppId=0 AND CounterId=@id AND Timestamp >= @timestamp AND CAST(Timestamp A
                             }
                         }
                     }
-
                 }
             }
             catch (Exception exc)

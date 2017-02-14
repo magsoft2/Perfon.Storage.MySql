@@ -11,14 +11,14 @@ namespace Perfon.Storage.MySql
     /// Data block of Perf Counter.
     /// Used for obtaining perf counter time series from storages
     /// </summary>
-    public struct PerfCounterValue : IPerfCounterValue
+    public class PerfCounterValue : IPerfCounterValue
     {
         //public PerfCounterValue()
         //{
 
         //}
 
-        public PerfCounterValue(DateTime timestamp, float value):this()
+        public PerfCounterValue(DateTime timestamp, float value) //:this()
         {
             Timestamp = timestamp;
             Value = value;
