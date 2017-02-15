@@ -51,11 +51,6 @@ namespace Perfon.Storage.MySql
                     now = nowArg.Value;
                 }
 
-
-                //OnError(new object(), new PerfonErrorEventArgs("Save: "+now.ToString()+", CPU:"+(from t in counters where t.Name=="CPU, %" select t.Value).FirstOrDefault().ToString()));
-                //return;
-
-
                 List<short> counterId = new List<short>();
 
                 bool updateNames = false;
@@ -215,7 +210,7 @@ WHERE AppId=0 AND CounterId=@id AND Timestamp >= @timestamp AND Timestamp < @tim
                         
                         using (var reader = await cmd.ExecuteReaderAsync(CommandBehavior.SequentialAccess))
                         {
-                            while (reader.Read())
+                            while (await reader.ReadAsync())
                             {
                                 var timeStamp = new DateTime(reader.GetDateTime(0).Ticks);
                                 var value = reader.GetFloat(1);
@@ -259,7 +254,7 @@ WHERE AppId=0 AND CounterId=@id AND Timestamp >= @timestamp AND Timestamp < @tim
                         cmd.CommandText = @"SELECT Name FROM CounterNames ";
                         using (var reader = await cmd.ExecuteReaderAsync())
                         {
-                            while (reader.Read())
+                            while (await reader.ReadAsync())
                             {
                                 res.Add(reader.GetString(0));
                             }
